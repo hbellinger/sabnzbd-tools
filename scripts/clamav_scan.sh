@@ -35,7 +35,9 @@ LOGGING_OUTPUT="false"
 PROBLEMATIC_DIR="${HOME}/data/Suspicious/"
 
 CLAMSCAN_BNRY="clamdscan"         # * ClamAV Binary Name
-CLAMSCAN_PATH="/usr/bin"         # * ClamAV Binary Directory
+CLAMSCAN_PATH="/usr/bin"          # * ClamAV Binary Directory
+CLAMSCAN_MLTI="true"              # * ClamAV Multithreaded Scanning
+CLAMSCAN_FDPS="true"              # * ClamAV FDPass
 
 ########################################################################################
 #
@@ -202,22 +204,41 @@ echo -e "[$(timestamp)][\e[1;33mNOTICE\e[0m] Starting Scan with ClamAV."
 
 if [ "$LOGGING_OUTPUT" = "true" ]
 then
-	echo -e "[$(timestamp)][\e[1;33mNOTICE\e[0m] Logging disabled."
+	echo -e "[$(timestamp)][\e[1;33mNOTICE\e[0m] Logging enabled."
 	LOGFILE="$SABNZBD_JOBDIR/clamav_scan.log"
 	LOGGING_PARAM="-l \"$LOGFILE\""
 else
+	echo -e "[$(timestamp)][\e[1;33mNOTICE\e[0m] Logging disabled."
 	LOGGING_PARAM=""
+fi
+
+if [ "$CLAMSCAN_MLTI" = "true" ]
+then
+	echo -e "[$(timestamp)][\e[1;33mNOTICE\e[0m] Multithreaded scan enabled."
+	MULTISCAN_PARAM="--multiscan"
+else
+	echo -e "[$(timestamp)][\e[1;33mNOTICE\e[0m] Multithreaded scan disabled."
+	MULTISCAN_PARAM=""
+fi
+
+if [ "$CLAMSCAN_FDPS" = "true" ]
+then
+	echo -e "[$(timestamp)][\e[1;33mNOTICE\e[0m] File descriptor pass enabled."
+	FDPASS_PARAM="--fdpass"
+else
+	echo -e "[$(timestamp)][\e[1;33mNOTICE\e[0m] File descriptor pass disabled."
+	FDPASS_PARAM=""
 fi
 
 if [ "$VERBOSE_OUTPUT" = "true" ]
 then
 	# Verbose output.
-	sudo $CLAMAV_SCAN_PATH --verbose $LOGGING_PARAM "$SABNZBD_JOBDIR"
+	sudo $CLAMAV_SCAN_PATH --verbose $LOGGING_PARAM $MULTISCAN_PARAM $FDPASS_PARAM "$SABNZBD_JOBDIR"
 	
 	CLAMAV_SCAN_STTS=$?
 else
 	# Quiet output.
-	sudo $CLAMAV_SCAN_PATH --quiet $LOGGING_PARAM "$SABNZBD_JOBDIR"
+	sudo $CLAMAV_SCAN_PATH --quiet $LOGGING_PARAM $MULTISCAN_PARAM $FDPASS_PARAM "$SABNZBD_JOBDIR"
 
 	CLAMAV_SCAN_STTS=$?
 fi
